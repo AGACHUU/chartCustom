@@ -3,11 +3,58 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>chartJS_gauge</title>
+    <title>chartJS_semi_circle_pie_with_hole</title>
+    <!-- Chart.js 라이브러리 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
-    <body type="text/javascript">
-      document.addEventListener("DOMContentLoaded", function () {});
-    </body>
+    <!-- 차트를 그릴 캔버스 요소를 포함한 컨테이너 -->
+    <div class="chart-container" style="width: 500px; height: 300px">
+      <canvas id="myChart"></canvas>
+    </div>
+    <script>
+      // 차트에 표시할 데이터 정의
+      const data = {
+        labels: ["Red", "Blue", "Yellow"], // 각 섹션의 레이블
+        datasets: [
+          {
+            label: "My First Dataset", // 데이터셋의 레이블
+            data: [300, 50, 100], // 각 섹션의 값
+            backgroundColor: [
+              "rgb(255, 99, 132)", // 빨간색
+              "rgb(54, 162, 235)", // 파란색
+              "rgb(255, 205, 86)", // 노란색
+            ],
+            hoverOffset: 2, // 마우스 오버 시 섹션이 튀어나오는 정도
+          },
+        ],
+      };
+
+      // 차트 구성 옵션
+      const config = {
+        type: "pie", // 차트 타입을 파이 차트로 유지
+        data: data, // 위에서 정의한 데이터 사용
+        options: {
+          responsive: true, // 차트를 반응형으로 설정 (컨테이너 크기에 맞춤)
+          plugins: {
+            legend: {
+              position: "bottom", // 범례를 차트 상단에 위치
+            },
+            title: {
+              display: false, // 차트 제목 표시
+              text: "Semi-circle Pie Chart with Hole", // 차트 제목
+            },
+          },
+          rotation: -90, // 차트를 90도 반시계 방향으로 회전 (반원의 시작점 조정)
+          circumference: 180, // 차트의 원주를 180도로 제한 (반원 형태 생성)
+          cutout: "40%", // 중앙에 구멍을 생성. 파이 차트에서는 일반적이지 않지만 가능함
+        },
+      };
+
+      // 캔버스 요소 가져오기
+      const ctx = document.getElementById("myChart");
+      // 차트 생성 및 렌더링
+      new Chart(ctx, config);
+    </script>
   </body>
 </html>
