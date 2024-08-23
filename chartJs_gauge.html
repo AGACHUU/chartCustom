@@ -25,7 +25,7 @@
               "rgb(54, 162, 235)", // 파란색
               "rgb(255, 205, 86)", // 노란색
             ],
-            hoverOffset: 2, // 마우스 오버 시 섹션이 튀어나오는 정도
+            hoverOffset: 9, // 마우스 오버 시 섹션이 튀어나오는 정도정하는거
           },
         ],
       };
@@ -35,14 +35,14 @@
         type: "pie", // 차트 타입을 파이 차트로 유지
         data: data, // 위에서 정의한 데이터 사용
         options: {
-          responsive: true, // 차트를 반응형으로 설정 (컨테이너 크기에 맞춤)
+          responsive: true,
           plugins: {
             legend: {
               position: "bottom", // 범례를 차트 상단에 위치
             },
             title: {
-              display: false, // 차트 제목 표시
-              text: "Semi-circle Pie Chart with Hole", // 차트 제목
+              display: true, // 차트 제목 표시
+              text: " 파이 차트 게이지차트 커스텀 예제", // 차트 제목
             },
           },
           rotation: -90, // 차트를 90도 반시계 방향으로 회전 (반원의 시작점 조정)
@@ -55,6 +55,7 @@
       const ctx = document.getElementById("myChart");
       // 차트 생성 및 렌더링
       new Chart(ctx, config);
+      //new Chart
     </script>
   </body>
 </html>
