@@ -4,73 +4,84 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Interactive Multi-Layer Gauge Chart</title>
+    <!-- Chart.js 라이브러리를 불러옵니다 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
+    <!-- 차트를 그릴 캔버스 요소를 포함한 컨테이너 -->
     <div style="width: 400px; height: 250px">
       <canvas id="gaugeChart"></canvas>
     </div>
     <script>
+      // 캔버스 요소를 가져와 2D 컨텍스트를 얻습니다
       const ctx = document.getElementById("gaugeChart").getContext("2d");
 
+      // 차트 데이터를 정의합니다
       const data = {
         datasets: [
+          // 각 데이터셋은 하나의 레이어를 나타냅니다
           {
-            data: [75, 25],
+            data: [75, 25], // [채워진 부분, 비어있는 부분]
             backgroundColor: ["rgba(255, 99, 132, 0.8)", "rgba(200, 200, 200, 0.3)"],
             borderWidth: 0,
-            cutout: "75%",
+            cutout: "55%", // 도넛 차트의 중심 구멍 크기
           },
           {
             data: [50, 50],
             backgroundColor: ["rgba(54, 162, 235, 0.8)", "rgba(200, 200, 200, 0.3)"],
             borderWidth: 0,
-            cutout: "65%",
+            cutout: "45%",
           },
           {
             data: [25, 75],
             backgroundColor: ["rgba(255, 206, 86, 0.8)", "rgba(200, 200, 200, 0.3)"],
             borderWidth: 0,
-            cutout: "55%",
+            cutout: "40%",
           },
         ],
       };
 
-      let activeLayer = -1; // 현재 선택된 레이어 (-1은 아무것도 선택되지 않음)
+      // 현재 활성화된 레이어와 중앙에 표시될 값을 추적하는 변수
+      let activeLayer = -1; // -1은 아무 레이어도 선택되지 않은 상태
       let centerValue = 16.78; // 초기 중앙 값
 
+      // Chart.js를 사용하여 차트를 생성합니다
       const gaugeChart = new Chart(ctx, {
-        type: "doughnut",
+        type: "doughnut", // 도넛 차트 타입 사용
         data: data,
         options: {
-          circumference: 180,
-          rotation: -90,
+          circumference: 180, // 반원을 만들기 위해 180도로 설정
+          rotation: -90, // 차트를 회전하여 반원이 위쪽을 향하도록 함
           responsive: true,
           maintainAspectRatio: false,
           plugins: {
-            tooltip: { enabled: false },
-            legend: { display: false },
+            tooltip: { enabled: false }, // 툴팁 비활성화
+            legend: { display: false }, // 범례 숨김
           },
           layout: {
             padding: 20,
           },
+          // 마우스 호버 이벤트 처리
           onHover: (event, elements) => {
             if (elements.length > 0) {
+              // 마우스가 레이어 위에 있을 때
               const hoveredElement = elements[0];
               const datasetIndex = hoveredElement.datasetIndex;
               const value = data.datasets[datasetIndex].data[0];
               centerValue = value;
               activeLayer = datasetIndex;
             } else {
-              centerValue = defaultCenterValue;
+              // 마우스가 차트 밖으로 나갔을 때
+              centerValue = 16.78; // 기본값으로 복귀
               activeLayer = -1;
             }
-            gaugeChart.update();
+            gaugeChart.update(); // 차트 업데이트
           },
         },
         plugins: [
           {
             id: "centerText",
+            // 차트 그리기가 완료된 후 실행되는 함수
             afterDraw: (chart) => {
               const width = chart.width;
               const height = chart.height;
@@ -82,6 +93,7 @@
               ctx.textBaseline = "middle";
               ctx.textAlign = "center";
 
+              // 중앙에 값 표시
               const text = `${centerValue}%`;
               const textX = width / 2;
               const textY = height - 30;
@@ -92,6 +104,7 @@
               ctx.font = "bold 14px Arial";
               data.datasets.forEach((dataset, index) => {
                 const value = dataset.data[0];
+                // 각 섹션의 위치 계산
                 const angle = Math.PI * (1 - value / 100);
                 const radius = (chart.outerRadius - chart.innerRadius) / 2 + chart.innerRadius;
                 const x = width / 2 + radius * Math.cos(angle);
