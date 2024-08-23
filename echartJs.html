@@ -1,0 +1,47 @@
+<!-- https://www.snugarchive.com/blog/echarts-tutorial/ -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>echarts</title>
+    <script src="
+    https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js
+    "></script>
+  </head>
+  <body>
+    <div id="main" style="width: 600px; height: 400px"></div>
+    <script type="text/javascript">
+      //<!-- 3-1. 초기화하기 -->
+      let myChart = echarts.init(document.getElementById("main"));
+
+      //<!-- 3-2.차트 옵션 지정하기 -->
+      let option = {
+        // 차트 제목
+        title: {
+          text: "ECharts 기본 예제: HTML",
+        },
+        // 범례명
+        legend: {
+          data: ["개수"],
+          top: 20,
+        },
+        // x축 라벨
+        xAxis: {
+          data: ["제품A", "제품B", "제품C"],
+        },
+        yAxis: {},
+        series: [
+          {
+            name: "개수",
+            type: "bar", // 막대 그래프
+            data: [5, 3, 4],
+          },
+        ],
+      };
+
+      //   <!-- 3-3.차트 옵션 설정하기 -->
+      myChart.setOption(option);
+    </script>
+  </body>
+</html>

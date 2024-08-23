@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>echarts</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+  </head>
+  <body>
+    <div id="gauge-chart" style="width: 600px; height: 400px"></div>
+    <div id="bar-chart" style="width: 600px; height: 400px"></div>
+    <script type="text/javascript">
+      document.addEventListener("DOMContentLoaded", function () {
+        //HTML 문서가 완전히 로드되고 파싱될 때까지 기다린 후 내부의 함수를 실행
+        // html로드 완료가 되었을때 발생하는 이벤트
+        var gaugeDom = document.getElementById("gauge-chart");
+        //게이지덤에 계이지차트 아이디 저장
+        var gaugeChart = echarts.init(gaugeDom);
+        //echarts.init()= 이차트 초기화. 차트덤을 인자로 전달하여 어느 요소에 그릴지 지정.
+        // var 게이지차트 =: 초기화된 차트 인스턴스를 게이지차트 변수에 할당.
+        // 이후 이 변수를 통해 차트를 조작하거나 업데이트할 수 있습니다.
+        var gaugeOption = {
+          // 옵션 변수에 차트 모든 설정 저장 변수(데이터 , 스타일)등을 저장
+          series: [
+            {
+              type: "gauge",
+              progress: {
+                show: true,
+                width: 18,
+              },
+              axisLine: {
+                lineStyle: {
+                  width: 18,
+                },
+              },
+              axisTick: {
+                show: false,
+              },
+              splitLine: {
+                length: 15,
+                lineStyle: {
+                  width: 2,
+                  color: "#999",
+                },
+              },
+              axisLabel: {
+                distance: 25,
+                color: "#999",
+                fontSize: 20,
+              },
+              anchor: {
+                show: true,
+                showAbove: true,
+                size: 25,
+                itemStyle: {
+                  borderWidth: 10,
+                },
+              },
+              title: {
+                show: false,
+              },
+              detail: {
+                valueAnimation: true,
+                fontSize: 80,
+                offsetCenter: [0, "70%"],
+              },
+              data: [
+                {
+                  value: 70,
+                },
+              ],
+            },
+          ],
+        };
+
+        gaugeChart.setOption(gaugeOption);
+        // 막대 차트
+        var barDom = document.getElementById("bar-chart");
+        var barChart = echarts.init(barDom);
+        var barOption = {
+          title: {
+            text: "월별 판매량",
+          },
+          xAxis: {
+            type: "category",
+            data: ["1월", "2월", "3월", "4월", "5월", "6월"],
+          },
+          yAxis: {
+            type: "value",
+          },
+          series: [
+            {
+              data: [120, 200, 150, 80, 70, 110],
+              type: "bar",
+            },
+          ],
+        };
+        barChart.setOption(barOption);
+      });
+    </script>
+  </body>
+</html>
