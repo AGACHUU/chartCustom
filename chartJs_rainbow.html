@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive Multi-Layer Gauge Chart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div style="width: 400px; height: 250px">
+      <canvas id="gaugeChart"></canvas>
+    </div>
+    <script>
+      const ctx = document.getElementById("gaugeChart").getContext("2d");
+
+      const data = {
+        datasets: [
+          {
+            data: [75, 25],
+            backgroundColor: ["rgba(255, 99, 132, 0.8)", "rgba(200, 200, 200, 0.3)"],
+            borderWidth: 0,
+            cutout: "75%",
+          },
+          {
+            data: [50, 50],
+            backgroundColor: ["rgba(54, 162, 235, 0.8)", "rgba(200, 200, 200, 0.3)"],
+            borderWidth: 0,
+            cutout: "65%",
+          },
+          {
+            data: [25, 75],
+            backgroundColor: ["rgba(255, 206, 86, 0.8)", "rgba(200, 200, 200, 0.3)"],
+            borderWidth: 0,
+            cutout: "55%",
+          },
+        ],
+      };
+
+      let activeLayer = -1; // 현재 선택된 레이어 (-1은 아무것도 선택되지 않음)
+      let centerValue = 16.78; // 초기 중앙 값
+
+      const gaugeChart = new Chart(ctx, {
+        type: "doughnut",
+        data: data,
+        options: {
+          circumference: 180,
+          rotation: -90,
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: { enabled: false },
+            legend: { display: false },
+          },
+          layout: {
+            padding: 20,
+          },
+          onHover: (event, elements) => {
+            if (elements.length > 0) {
+              const hoveredElement = elements[0];
+              const datasetIndex = hoveredElement.datasetIndex;
+              const value = data.datasets[datasetIndex].data[0];
+              centerValue = value;
+              activeLayer = datasetIndex;
+            } else {
+              centerValue = defaultCenterValue;
+              activeLayer = -1;
+            }
+            gaugeChart.update();
+          },
+        },
+        plugins: [
+          {
+            id: "centerText",
+            afterDraw: (chart) => {
+              const width = chart.width;
+              const height = chart.height;
+              const ctx = chart.ctx;
+
+              ctx.restore();
+              ctx.font = "bold 30px Arial";
+              ctx.fillStyle = "black";
+              ctx.textBaseline = "middle";
+              ctx.textAlign = "center";
+
+              const text = `${centerValue}%`;
+              const textX = width / 2;
+              const textY = height - 30;
+
+              ctx.fillText(text, textX, textY);
+
+              // 각 섹션의 값 표시
+              ctx.font = "bold 14px Arial";
+              data.datasets.forEach((dataset, index) => {
+                const value = dataset.data[0];
+                const angle = Math.PI * (1 - value / 100);
+                const radius = (chart.outerRadius - chart.innerRadius) / 2 + chart.innerRadius;
+                const x = width / 2 + radius * Math.cos(angle);
+                const y = height - (radius * Math.sin(angle) + 20);
+
+                // 활성 레이어 강조
+                if (index === activeLayer) {
+                  ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+                } else {
+                  ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                }
+
+                ctx.fillText(`${value}%`, x, y);
+              });
+
+              ctx.save();
+            },
+          },
+        ],
+      });
+    </script>
+  </body>
+</html>
