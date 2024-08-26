@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Interactive Multi-Layer Gauge Chart</title>
-    <!-- Chart.js 라이브러리를 불러옵니다 -->
+    <!-- Chart.js 라이브러리를 CDN에서 불러옵니다 -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   </head>
   <body>
@@ -15,25 +15,28 @@
     <script>
       // 캔버스 요소를 가져와 2D 컨텍스트를 얻습니다
       const ctx = document.getElementById("gaugeChart").getContext("2d");
-
+      // 동적 데이터를 위한 변수 선언
+      let layer1Value = 70;
+      let layer2Value = 50;
+      let layer3Value = 30;
       // 차트 데이터를 정의합니다
       const data = {
         datasets: [
           // 각 데이터셋은 하나의 레이어를 나타냅니다
           {
-            data: [75, 25], // [채워진 부분, 비어있는 부분]
+            data: [layer1Value, 100 - layer1Value], // [채워진 부분, 비어있는 부분]
             backgroundColor: ["rgba(255, 99, 132, 0.8)", "rgba(200, 200, 200, 0.3)"],
             borderWidth: 0,
             cutout: "55%", // 도넛 차트의 중심 구멍 크기
           },
           {
-            data: [50, 50],
+            data: [layer2Value, 100 - layer2Value],
             backgroundColor: ["rgba(54, 162, 235, 0.8)", "rgba(200, 200, 200, 0.3)"],
             borderWidth: 0,
             cutout: "45%",
           },
           {
-            data: [25, 75],
+            data: [layer3Value, 100 - layer3Value],
             backgroundColor: ["rgba(255, 206, 86, 0.8)", "rgba(200, 200, 200, 0.3)"],
             borderWidth: 0,
             cutout: "40%",
@@ -42,8 +45,8 @@
       };
 
       // 현재 활성화된 레이어와 중앙에 표시될 값을 추적하는 변수
-      let activeLayer = -1; // -1은 아무 레이어도 선택되지 않은 상태
-      let centerValue = 16.78; // 초기 중앙 값
+      let activeLayer = data.datasets.length - 1; // -1은 아무 레이어도 선택되지 않은 상태 제일 안쪽에 있는 레이어
+      let centerValue = data.datasets[activeLayer].data[0]; // 첫번쩨 layer의 값
 
       // Chart.js를 사용하여 차트를 생성합니다
       const gaugeChart = new Chart(ctx, {
@@ -52,8 +55,8 @@
         options: {
           circumference: 180, // 반원을 만들기 위해 180도로 설정
           rotation: -90, // 차트를 회전하여 반원이 위쪽을 향하도록 함
-          responsive: true,
-          maintainAspectRatio: false,
+          responsive: true, // 차트의 크기가 부모의 컨테이너 크기에 맞춰 조정되는 옵션 브라우저 창의 크기가 변경 되면 자동으로 리사이징됨.
+          maintainAspectRatio: false, //컨테이너 비율에 맞추는 옵션.
           plugins: {
             tooltip: { enabled: false }, // 툴팁 비활성화
             legend: { display: false }, // 범례 숨김
@@ -61,31 +64,39 @@
           layout: {
             padding: 20,
           },
+
           // 마우스 호버 이벤트 처리
           onHover: (event, elements) => {
             if (elements.length > 0) {
               // 마우스가 레이어 위에 있을 때
+              //  배열의 길이가 0보다 크다는 것은 마우스가 최소 하나의 차트 요소 위에 있다는거
               const hoveredElement = elements[0];
+              //엘레멘트의 첫번쨰 즉 0번째 요소를 가져옴.
               const datasetIndex = hoveredElement.datasetIndex;
+              //호버된 엘레멘트의 데이터셋에 접근
               const value = data.datasets[datasetIndex].data[0];
+              //데이터[0]은 해당 데이터셋의 첫번째 데이터 값을 가져옴.
               centerValue = value;
+              //가져온 값을 센터밸류에 할당
               activeLayer = datasetIndex;
+              //현재 호버된 레이어의 인덱스를 엑티브레이어 변수에 할당. 이건 레이어가 현재 활성 상태인지 확인할떄 사용댐.
             } else {
               // 마우스가 차트 밖으로 나갔을 때
-              centerValue = 16.78; // 기본값으로 복귀
-              activeLayer = -1;
+              activeLayer = data.datasets.length - 1; // -1은 아무 레이어도 선택되지 않은 상태
+              centerValue = data.datasets[activeLayer].data[0]; // 첫번쩨 layer의 값
             }
-            gaugeChart.update(); // 차트 업데이트
+            gaugeChart.update(); // 지금 현재 진행상황을 차트에 반영 하는
           },
         },
         plugins: [
           {
             id: "centerText",
-            // 차트 그리기가 완료된 후 실행되는 함수
             afterDraw: (chart) => {
+              //차트가 그려진후 실행되는 함수.
               const width = chart.width;
               const height = chart.height;
               const ctx = chart.ctx;
+              //ctx=컨텍스트  투디렌터링 컨택스트 접근
 
               ctx.restore();
               ctx.font = "bold 30px Arial";
@@ -96,7 +107,7 @@
               // 중앙에 값 표시
               const text = `${centerValue}%`;
               const textX = width / 2;
-              const textY = height - 30;
+              const textY = height - 40;
 
               ctx.fillText(text, textX, textY);
 
@@ -105,6 +116,8 @@
               data.datasets.forEach((dataset, index) => {
                 const value = dataset.data[0];
                 // 각 섹션의 위치 계산
+                //    a) 값 추출: dataset.data[0]은 각 레이어의 채워진 부분 퍼센티지
+                //    b) 위치 계산:
                 const angle = Math.PI * (1 - value / 100);
                 const radius = (chart.outerRadius - chart.innerRadius) / 2 + chart.innerRadius;
                 const x = width / 2 + radius * Math.cos(angle);
@@ -112,11 +125,23 @@
 
                 // 활성 레이어 강조
                 if (index === activeLayer) {
-                  ctx.fillStyle = "rgba(0, 0, 0, 0.8)";
+                  ctx.fillStyle = "rgba(0, 0, 0, 1)";
+                  ctx.font = "bold 16px Arial";
+
+                  // 활성 레이어에 원형 배경 추가
+                  ctx.beginPath();
+                  ctx.arc(x, y, 15, 0, 2 * Math.PI);
+                  ctx.fillStyle = "rgba(255, 255, 0, 0.8)";
+                  ctx.fill();
+                  ctx.strokeStyle = "black";
+                  ctx.lineWidth = 2;
+                  ctx.stroke();
                 } else {
-                  ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+                  ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+                  ctx.font = "bold 14px Arial";
                 }
 
+                ctx.fillStyle = index === activeLayer ? "black" : "rgba(0, 0, 0, 0.6)";
                 ctx.fillText(`${value}%`, x, y);
               });
 
@@ -125,6 +150,29 @@
           },
         ],
       });
+
+      // 데이터 업데이트 함수
+      function updateChartData(layer1, layer2, layer3) {
+        layer1Value = layer1;
+        layer2Value = layer2;
+        layer3Value = layer3;
+
+        data.datasets[0].data = [layer1Value, 100 - layer1Value];
+        data.datasets[1].data = [layer2Value, 100 - layer2Value];
+        data.datasets[2].data = [layer3Value, 100 - layer3Value];
+
+        centerValue = data.datasets[activeLayer].data[0];
+
+        gaugeChart.update();
+      }
+
+      // // 예시: 5초마다 랜덤 데이터로 차트 업데이트
+      // setInterval(() => {
+      //   const randomValue1 = Math.floor(Math.random() * 100);
+      //   const randomValue2 = Math.floor(Math.random() * 100);
+      //   const randomValue3 = Math.floor(Math.random() * 100);
+      //   updateChartData(randomValue1, randomValue2, randomValue3);
+      // }, 5000);
     </script>
   </body>
 </html>
