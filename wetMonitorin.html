@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gauge Chart with Custom Gradient</title>
+    <!-- Chart.js 라이브러리 로드 -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        background-color: #03071f; /* 배경색 설정 */
+        color: white;
+        font-family: Arial, sans-serif;
+      }
+      .chart-container {
+        width: 160px;
+        height: 98px;
+        position: relative;
+      }
+      .custom-legend {
+        text-align: center;
+        margin-top: 5px;
+        font-size: 14px;
+      }
+      div.legendValue span.amountValue {
+        color: rgba(132, 166, 255, 1);
+      }
+      .dotcircle {
+        width: 110px; /* 지름 */
+        height: 60px; /* 반지름 */
+        border-radius: 120px 120px 0 0; /* 위쪽 모서리만 둥글게 */
+        overflow: hidden; /* 아래쪽 절반을 숨김 */
+        border: 2px dashed;
+        border-bottom: none;
+        position: relative;
+        top: -90px;
+        left: 24px;
+      }
+      canvas {
+        filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.35));
+      }
+    </style>
+  </head>
+  <body>
+    <!-- 차트를 그릴 캔버스 요소를 포함한 컨테이너 -->
+    <div class="chart-container">
+      <canvas id="gaugeChart"></canvas>
+      <div class="custom-legend">
+        <div class="legendValue" id="legendText">
+          <span class="presentValue">1,000 m²</span> / <span class="amountValue">500 m²</span>
+        </div>
+      </div>
+      <div class="dotcircle"></div>
+    </div>
+    <script>
+      // 캔버스 요소를 가져와 2D 컨텍스트를 얻습니다
+      const ctx = document.getElementById("gaugeChart").getContext("2d");
+
+      // 게이지의 초기값 설정 (80%)
+      let gaugeValue = 80;
+
+      /////////////////////////////
+      function createRadialGradient(ctx) {
+        const gradient = ctx.createRadialGradient(80, 49, 0, 80, 49, 80);
+        gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+        gradient.addColorStop(1, "rgba(34, 210, 234, 1)");
+        return gradient;
+      }
+      // 차트 데이터 정의
+      const data = {
+        datasets: [
+          {
+            data: [gaugeValue, 100 - gaugeValue],
+            backgroundColor: [createRadialGradient(ctx), "rgba(187, 238, 252, 0.2)"],
+            borderWidth: 0,
+          },
+        ],
+      };
+      ///////////////////////////////
+
+      // 중앙에 표시될 값을 추적하는 변수
+      let centerValue = gaugeValue;
+
+      // Chart.js를 사용하여 차트를 생성
+      const gaugeChart = new Chart(ctx, {
+        type: "doughnut", // 도넛 차트 타입 사용
+        data: data,
+        options: {
+          circumference: 180, // 반원을 만들기 위해 180도로 설정
+          rotation: -90, // 차트를 회전하여 반원이 위쪽을 향하도록 함
+          cutout: "80%", // 내부 cutout 비율 (게이지 두께 조절)
+          responsive: true, // 차트의 크기가 부모 컨테이너에 맞춰 조정되도록 설정
+          maintainAspectRatio: false, // 컨테이너 비율에 맞추는 옵션
+          plugins: {
+            tooltip: { enabled: false }, // 툴팁 비활성화
+            legend: { display: false }, // 범례 숨김
+          },
+          layout: {
+            padding: 0,
+          },
+        },
+        plugins: [
+          //   // 그림자 효과를 추가하는 플러그인
+          //   {
+          //     id: "shadowPlugin",
+          //     beforeDraw: (chart) => {
+          //       const { ctx } = chart;
+          //       ctx.save();
+          //       ctx.shadowColor = "rgba(0, 255, 255, 0.5)"; // Changed to cyan for glow
+          //       ctx.shadowBlur = 15; // Increased blur for more glow
+          //       ctx.shadowOffsetY = 0; // Removed offset for even glow
+          //     },
+          //     afterDraw: (chart) => {
+          //       chart.ctx.restore();
+          //     },
+          //   },
+          // 중앙 텍스트를 그리는 플러그인
+          {
+            id: "centerText",
+            afterDraw: (chart) => {
+              const width = chart.width;
+              const height = chart.height;
+              const ctx = chart.ctx;
+
+              ctx.save();
+              ctx.font = "bold 36px Arial"; // 폰트 설정
+              ctx.fillStyle = "rgb(255, 255, 255)"; // 텍스트 색상 설정
+              ctx.textBaseline = "start";
+              ctx.textAlign = "center";
+
+              // 중앙에 값 표시
+              const text = `${centerValue}%`;
+              const textX = width / 2;
+              const textY = height * 0.85;
+
+              ctx.fillText(text, textX, textY);
+              ctx.restore();
+            },
+          },
+        ],
+      });
+
+      // 커스텀 범례 업데이트 함수
+      function updateLegend(current, total) {
+        document.getElementById("legendText").textContent = `${current} m² /${total} m²`;
+      }
+
+      // 초기 범례 설정
+      updateLegend(1000, 1500);
+    </script>
+  </body>
+</html>
