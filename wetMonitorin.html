@@ -99,9 +99,9 @@
               const x = width / 2; // 왼쪽 끝에서 차트 너비의 절반만큼이 중앙임
               const y = height - 10; // 위에서 부터 차트 높이길이만큼 떨어진 위치. 이유는 모르겠는데 차트높이가 보이는 것보다 10px 마진이 있어서, 그만큼 빼줌.
               const radius = (width / 2) * 0.7; // 게이지의 70%
-              const totalStartAngle = Math.PI; // - 180도 그림자의 시작
+              const totalStartAngle = Math.PI; // - 180도 그림자의 시작 마이너스를 지워도 같은 이유는 clockotherwise 변수가 시계방향으로 되어있어서
               const totalEndAngle = 0; // 0도 끝각도
-              const counterClockwise = false; // 시계 방향
+              const counterClockwise = true; // 시계 방향
 
               const lineCount = 40; // dash 개수
 
@@ -163,19 +163,23 @@
         //id로 찾은요소의  html내용을 변경해준ㅁ
       }
 
-      // 차트의 데이터 표시
+      // 차트의  데이터 표시 업데이트
       function updateChart(currentValue) {
         centerValue = currentValue;
         gaugeValue = (currentValue / totalAmount) * 100;
+        //지금 얼만큼 차지하고 있는 밸류를 구하는 계산법 총 량을 지금 차지하고 있는 값을 나누고 비율을 퍼센테이지로 변환하기 위한 100을 곱해준다.
         gaugeChart.data.datasets[0].data = [gaugeValue, 100 - gaugeValue];
+        // 채워진 부분, 나눠진 부분 을 의미해줌 100-에서ㅏ 예를 들어 게이지벨유가 70이면
+        //삼십이 남는데 그걸로 비워진 부분 채워진 부분 나눌수 있고 그걸 시각적으로 표현
         gaugeChart.update();
         updateLegend(currentValue);
+        //차트데이터를 업데이트 하고
       }
 
-      // etTotalAmount 함수
-      function setTotalAmount(totlaValue) {
-        totalAmount = totlaValue;
-        updateChart(centerValue); // 현재 값으로 차트 다시 그리기
+      // setTotalAmount 함수: 총 토탈 밸유 data를  변경해주는 하고 업데이트 해줌.
+      function setTotalAmount(totalValue) {
+        totalAmount = totalValue;
+        updateChart(centerValue); // 현재 값으로 차트 다시 업데이트 해주기
       }
 
       // 수정된 부분: 초기 설정
@@ -185,6 +189,7 @@
 
       ///////////////////// 30% 차오르게 데이터 넣는 코드 부분 /////////////////////
       const fakeData = Math.round(totalAmount * 0.4);
+      //Math.round(): 이 함수는 괄호 안의 숫자를 반올림합니다. 즉, 소수점 이하를 반올림하여 가장 가까운 정수로만듬
 
       // 차트 업데이트
       updateChart(fakeData);
