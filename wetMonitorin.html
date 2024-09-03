@@ -50,6 +50,9 @@
 
       // 게이지의 초기값 설정 (80%)
       let gaugeValue = 80;
+      const totalV = 1000;
+      const currentV = 400;
+      /////이부분을 꼭 변수로 만들어야하는거임 1000이 총이고 큐랜트가 현재인데 백에서 받아올 데이터를 하드코딩으로 우리가 넣어준것 이것부터 이해해ㅑ야함////
 
       function createRadialGradient(ctx) {
         const gradient = ctx.createRadialGradient(80, 49, 0, 80, 49, 80);
@@ -142,36 +145,35 @@
               ctx.textBaseline = "start";
               ctx.textAlign = "center";
 
-              // 수정된 부분: 퍼센트 계산
-              const percentage = Math.round((centerValue / totalAmount) * 100);
-              const text = `${percentage}%`;
-              const textX = width / 2;
-              const textY = height * 0.85;
+              // 퍼센트숫자부분  계산 하는부분
+              const percentage = Math.round((currentV / totalV) * 100); //100을곱해서 퍼센테이지화 시킴.
+              const text = `${percentage}%`; //이부분이 문자열로 만드는거
+              const textX = width / 2; //정중앙 표시
+              const textY = height * 0.85; //높이 지정 팔십오프로위치에 택스트 배치
 
-              ctx.fillText(text, textX, textY);
-              ctx.restore();
+              ctx.fillText(text, textX, textY); //캔버스에 변수를 그림.
+              ctx.restore(); // 이전에 저장된 캔버스 복원
             },
           },
         ],
       });
 
       // 범례 텍스트를 업데이트 하는 업데이트 레전드임.
-      function updateLegend(current) {
+      function updateLegend() {
         document.getElementById(
           "legendText"
-        ).innerHTML = `<span class="presentValue">${current} m²</span> / <span class="amountValue">${totalAmount} m²</span>`;
+        ).innerHTML = `<span class="presentValue">${currentV} m²</span> / <span class="amountValue">${totalAmount} m²</span>`;
         //id로 찾은요소의  html내용을 변경해준ㅁ
       }
 
       // 차트의  데이터 표시 업데이트
       function updateChart(currentValue) {
         centerValue = currentValue;
-        gaugeValue = (currentValue / totalAmount) * 100;
+        //gaugeValue = (currentValue / totalAmount) * 100;
         //지금 얼만큼 차지하고 있는 밸류를 구하는 계산법 총 량을 지금 차지하고 있는 값을 나누고 비율을 퍼센테이지로 변환하기 위한 100을 곱해준다.
-        gaugeChart.data.datasets[0].data = [gaugeValue, 100 - gaugeValue];
+        // gaugeChart.data.datasets[0].data = [currentValue, 100 - currentValue];
         // 채워진 부분, 나눠진 부분 을 의미해줌 100-에서ㅏ 예를 들어 게이지벨유가 70이면
         //삼십이 남는데 그걸로 비워진 부분 채워진 부분 나눌수 있고 그걸 시각적으로 표현
-        gaugeChart.update();
         updateLegend(currentValue);
         //차트데이터를 업데이트 하고
       }
@@ -185,14 +187,14 @@
       // 수정된 부분: 초기 설정
       updateChart(0);
 
-      setTotalAmount(1000);
+      setTotalAmount(totalV);
 
-      ///////////////////// 30% 차오르게 데이터 넣는 코드 부분 /////////////////////
-      const fakeData = Math.round(totalAmount * 0.4);
+      ///////////////////// 게이지차오르게 코드 부분 /////////////////////
+      const Gdata = Math.round((currentV / totalV) * 100);
       //Math.round(): 이 함수는 괄호 안의 숫자를 반올림합니다. 즉, 소수점 이하를 반올림하여 가장 가까운 정수로만듬
 
       // 차트 업데이트
-      updateChart(fakeData);
+      updateChart(Gdata);
       /////////////////////////////////////////////////////////////////////
     </script>
   </body>
