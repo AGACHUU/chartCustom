@@ -54,7 +54,7 @@
       function createRadialGradient(ctx) {
         const gradient = ctx.createRadialGradient(80, 49, 0, 80, 49, 80);
         gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-        gradient.addColorStop(1, "rgba(34, 210, 24, 1)");
+        gradient.addColorStop(1, "rgba(34, 210, 234, 1)");
         return gradient;
       }
       // 차트 데이터 정의
@@ -70,11 +70,12 @@
 
       // Chart.js를 사용하여 차트를 생성
       const gaugeChart = new Chart(ctx, {
-        type: "pie", // 도넛 차트 타입 사용
+        type: "doughnut", // 도넛 차트 타입 사용
         data: data,
         options: {
           circumference: 180, // 반원을 만들기 위해 180도로 설정
-          rotation: -90, // 차트를 회전하여 반원이 위쪽을 향하도록
+          rotation: -90, // 차트를 회전하여 반원이 위쪽을 향하도록 함
+          cutout: "80%", // 내부 cutout 비율 (게이지 두께 조절)
           responsive: true, // 차트의 크기가 부모 컨테이너에 맞춰 조정되도록 설정
           maintainAspectRatio: false, // 컨테이너 비율에 맞추는 옵션
           plugins: {
@@ -90,16 +91,36 @@
               const { ctx, width, height } = chart;
               //ctx는 렌더링 2d컨텍스트, width,height차트캔버스의 너비와 높이.  shadow-plugin차트 아래 반원 모양 그라데이션 그림자를 그림. 여러개의 작은 동그라미로 구성됨.
               const x = width / 2; // 왼쪽 끝에서 차트 너비의 절반만큼이 중앙임
-              const y = height - 3; // 위에서 부터 차트 높이길이만큼 떨어진 위치. 이유는 모르겠는데 차트높이가 보이는 것보다 10px 마진이 있어서, 그만큼 빼줌.
-              const radius = (width / 2) * 0.9; // 게이지의 70%
+              const y = height - 10; // 위에서 부터 차트 높이길이만큼 떨어진 위치. 이유는 모르겠는데 차트높이가 보이는 것보다 10px 마진이 있어서, 그만큼 빼줌.
+              const radius = (width / 2) * 0.7; // 게이지의 70%
               const totalStartAngle = Math.PI; // - 180도 그림자의 시작 마이너스를 지워도 같은 이유는 clockotherwise 변수가 시계방향으로 되어있어서
               const totalEndAngle = 0; // 0도 끝각도
               const counterClockwise = false; // 시계 방향
 
-              const lineCount = 10; // dash 개수
+              const lineCount = 40; // dash 개수
 
               const unitAngle = Math.abs(totalEndAngle - totalStartAngle) / lineCount; // dash + gap 각도
               const gapAngle = unitAngle / 2; // dash 각도
+
+              for (let i = 0; i < lineCount; i++) {
+                //이 루프는 lineCount만큼 반복하면서 각각의 호를 그립니다. 각 호는 조금씩 다른 각도와 투명도를 가지고이를 통해 그라데이션 효과를 줌
+                ctx.save();
+                ctx.beginPath();
+
+                const startAngle = totalStartAngle + unitAngle * i; // 작은 대시 하나의 시작 각도
+                const endAngle = startAngle + gapAngle; // 작은 대시 하나의 끝 각도
+
+                const alpha = i / lineCount; // 투명도를 0에서 1까지 증가시킴, lineCount 만큼 등분. 0/40, 1/40, 2/40, ... 40/40
+
+                ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`; // 선 색상 설정
+                ctx.lineWidth = 2; // 선 두께 설정
+
+                // x, y, radius, startAngle, endAngle
+                ctx.arc(x, y, radius, startAngle, endAngle, counterClockwise);
+
+                ctx.stroke();
+                ctx.restore();
+              }
             },
           },
           {
@@ -119,7 +140,7 @@
               const percentage = Math.round((currentV / totalV) * 100); //100을곱해서 퍼센테이지화 시킴.
               const text = `${percentage}%`; //이부분이 문자열로 만드는거
               const textX = width / 2; //정중앙 표시
-              const textY = height * 1; //높이 지정 팔십오프로위치에 택스트 배치
+              const textY = height * 0.85; //높이 지정 팔십오프로위치에 택스트 배치
 
               ctx.fillText(text, textX, textY); //캔버스에 변수를 그림.
               ctx.restore(); // 이전에 저장된 캔버스 복원
@@ -136,19 +157,7 @@
         //id로 찾은요소의  html내용을 변경해준ㅁ
       }
 
-      // 차트의  데이터 표시 업데이트
-      function updateChart(currentValue) {
-        centerValue = currentValue;
-        updateLegend(currentValue);
-      }
-
-      ///////////////////// 게이지차오르게 코드 부분 /////////////////////
-      const Gdata = Math.round((currentV / totalV) * 100);
-      //Math.round(): 이 함수는 괄호 안의 숫자를 반올림합니다. 즉, 소수점 이하를 반올림하여 가장 가까운 정수로만듬
-
-      // 차트 업데이트
-      updateChart(Gdata);
-      /////////////////////////////////////////////////////////////////////
+      updateLegend();
     </script>
   </body>
 </html>
