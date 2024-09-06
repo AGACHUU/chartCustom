@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>femsChart</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div class="bar-Chart-container" style="height: 400px">
+      <canvas id="barChart"> </canvas>
+    </div>
+    <script>
+      const ctx = document.getElementById("barChart").getContext("2d");
+
+      const barChart = new Chart(ctx, {
+        type: "bar",
+        options: {
+          //   barThickness: 40,
+          maintainAspectRatio: false,
+          maxBarThickness: 90, //pixel단위로 조정가능
+          minBarThickness: 90,
+
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+              align: "start",
+              // 마커의 크기를 조절합니다. 필요에 따라 값을 조정하세요.
+              labels: {
+                usePointStyle: true,
+                pointStyle: "circle",
+                pointRadius: 1,
+              },
+            },
+
+            tooltip: {
+              backgroundColor: "pink",
+            },
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false,
+              },
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 500,
+                display: false,
+              },
+              max: 4000,
+            },
+          },
+        },
+
+        data: {
+          labels: ["24-11-23", "24-11-24", "24-11-25", "24-11-26", "24-11-27", "24-11-28", "24-11-29"],
+          datasets: [
+            {
+              label: "실측값",
+              backgroundColor: ["#168fa7"],
+              data: [800, 1500, 3500, 2500, 500, 2500, 0],
+              barPercentage: 0.5,
+            },
+            {
+              label: "예측값",
+              backgroundColor: ["#075296"],
+              data: [1500, 3500, 900, 1500, 3300, 2200, 2900],
+              barPercentage: 0.5, //막대가 차지하는 폭의 비율
+              categoryPercentage: 0.5, //데이터 카테고리 여기에선 2막대바가 차지하는 차트폭의 비율을 설정
+              //동작방식
+              //카테고리 비율이 우선적으로 해당 ex예측값:0.5면 차트 전체에 0.5값을
+            },
+          ],
+        },
+      });
+    </script>
+  </body>
+</html>
