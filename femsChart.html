@@ -11,8 +11,31 @@
       <canvas id="barChart"> </canvas>
     </div>
     <script>
+      let categoryGap = 1;
+
+      const reportWindowSize = () => {
+        let windowWidth = window.outerWidth;
+        let dataLength = thirdData.length;
+
+        categoryGap = windowWidth;
+
+        //barChart.destroy();
+        barChart.update();
+        console.log(windowWidth);
+      };
+      const thirdData = [1500, 3500, 900, 1500, 3300, 2200, 2900];
+
+      window.addEventListener("resize", reportWindowSize);
+
       const ctx = document.getElementById("barChart").getContext("2d");
 
+      //category 갭을 어떤식으로 계산할건지.
+      // 렌더링 된 후에 차트가 그려지게 생애 주기를 따라 도큐먼트 레디 하는 스크립트 코드를 넣어줘야함
+      //https://learn.jquery.com/using-jquery-core/document-ready/
+      //생애주기의 의미나 그런거 알고 블로그에 정리헤ㅐ보기
+      //어떤식으로 계산하며 좋을까 그리고 리사이즈 될때 업데이트를 해주고 그걸 토대로 갭을 정해준다. 예를들어 ?고민좀해보자.
+      //https://7942yongdae.tistory.com/77
+      //https://developer.mozilla.org/ko/docs/Web/JavaScript/Guide/Grammar_and_types 더 읽어보기
       const barChart = new Chart(ctx, {
         type: "bar",
         options: {
@@ -60,16 +83,42 @@
           datasets: [
             {
               label: "실측값",
-              backgroundColor: ["#168fa7"],
+              backgroundColor: ["rgba(22, 143, 167, 0.5)"],
               data: [800, 1500, 3500, 2500, 500, 2500, 0],
-              barPercentage: 0.5,
+              barPercentage: 1,
+              categoryPercentage: categoryGap,
             },
             {
               label: "예측값",
-              backgroundColor: ["#075296"],
+              backgroundColor: ["rgba(22, 13, 7, 0.5)"],
               data: [1500, 3500, 900, 1500, 3300, 2200, 2900],
-              barPercentage: 0.5, //막대가 차지하는 폭의 비율
-              categoryPercentage: 0.5, //데이터 카테고리 여기에선 2막대바가 차지하는 차트폭의 비율을 설정
+              barPercentage: 1, //막대가 차지하는 폭의 비율
+              categoryPercentage: categoryGap, //데이터 카테고리 여기에선 2막대바가 차지하는 차트폭의 비율을 설정
+              //동작방식
+              //1.카테고리 비율이 우선적으로 폭이결정됨 ex예측값:0.5면 차트 전체에 0.5를 반비례함
+              //2.그 다음 barPercentage에 따라 각 막대의 폭이 계산됩니다.
+              //계산된 막대의 폭이 minBarThickness보다 작으면 minBarThickness가 적용
+              //계산된 막대의 폭이 maxBarThickness보다 크면 maxBarThickness가 적용
+
+              ///알아야할거 . 정확하게 어떻게 반비례 하다는건지 . 카테고리 자체는 실측값 예측값 포함 막대두게 포함인지 또는 실측값만을 두고 카테고리라고 칭하는지.
+              // 반비례한다고 하면 차트 넓이를 정해줘야 하는건지 상황생각해서 고민해보기.
+              //이 두 값은 반비례 관계에 있다고 볼 수 있지만, 각각 다른 측면(그룹 간 간격과 그룹 내 간격)을 제어하므로, 두 값을 적절히 조합하여 원하는 시각적 효과를 얻을 수 있습니다.
+              //이부분ㄴ이 정확히 어떻게 계산되는지 알아오기 .단순하게 막대의 크기와 간격을 조절하는건 알겠는데
+              //정확하게 왜인진 잘 모르겠음.
+              //왜 실측값 예측값 둘다 barPercentage categoryPercentage 가 들어가야하는지.
+
+              // -------------------------------
+              //카테고리 퍼센테이지는 사용할수 있는 카테고리의 너비
+              //바퍼센테이지는 카테고리 퍼센테이지가 먼저 계산된 후의 바 넓이를 정해준다.
+              //그래서 민맥스틱크니스로 계산된 바의 넓이를 그 사이에 값으로 또 적어주면
+              //보다 정확성이 높은 두꼐의 바 차트를 이용할수 있다 .
+            },
+            {
+              label: "세번째값",
+              backgroundColor: ["#075"],
+              data: thirdData,
+              barPercentage: 1, //막대가 차지하는 폭의 비율
+              categoryPercentage: categoryGap, //데이터 카테고리 여기에선 2막대바가 차지하는 차트폭의 비율을 설정
               //동작방식
               //1.카테고리 비율이 우선적으로 폭이결정됨 ex예측값:0.5면 차트 전체에 0.5를 반비례함
               //2.그 다음 barPercentage에 따라 각 막대의 폭이 계산됩니다.
