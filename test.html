@@ -3,163 +3,117 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Gauge Chart with Custom Gradient</title>
-    <!-- Chart.js 라이브러리 로드 -->
+    <title>gapChart</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-      body {
-        background-color: #03071f; /* 배경색 설정 */
-        color: white;
-        font-family: Arial, sans-serif;
-      }
-      .chart-container {
-        width: 160px;
-        height: 98px;
-        position: relative;
-      }
-      .custom-legend {
-        text-align: center;
-        margin-top: 5px;
-        font-size: 14px;
-      }
-      div.legendValue span.amountValue {
-        color: rgba(132, 166, 255, 1);
-      }
-
-      canvas {
-        filter: drop-shadow(0px 0px 4px rgba(0, 0, 0, 0.35));
-      }
-    </style>
   </head>
   <body>
-    <!-- 차트를 그릴 캔버스 요소를 포함한 컨테이너 -->
-    <div class="chart-container">
-      <canvas id="gaugeChart"></canvas>
-      <div class="custom-legend">
-        <div class="legendValue" id="legendText"></div>
-      </div>
+    <div class="bar-Chart-container" style="height: 400px">
+      <canvas id="barChart"> </canvas>
     </div>
     <script>
-      // 새로 추가된 부분: totalAmount 변수 선언
-      let totalAmount = 1500; // 기본값 설정, 필요에 따라 변경 가능
+      const ctx = document.getElementById("barChart").getContext("2d");
 
-      // 캔버스 요소를 가져와 2D 컨텍스트를 얻습니다
-      const ctx = document.getElementById("gaugeChart").getContext("2d");
+      //플러그인 만들기 .
+      //이게 이거 반복문으로 매 날짜마다 돌리기.
 
-      // 게이지의 초기값 설정
-      const totalV = 1000;
-      const currentV = 400;
-      /////이부분을 꼭 변수로 만들어야하는거임 1000이 총이고 큐랜트가 현재인데 백에서 받아올 데이터를 하드코딩으로 우리가 넣어준것 이것부터 이해해ㅑ야함////
+      Chart.register({
+        id: "adjust-gap-bar",
+        beforeDraw: (chart, args, options) => {
+          //chartjs사용할때 options에 기본적으로 responsive(반응형)이 true라 컨테이너 박스 크기에 맞춰 자동으로 반응함.
+          //beforeDraw는chartjs의 생명주기 훅 차트가 캔버스에 그려지기 전에 실행 , 이부분이 리사이징, 데이터 업데이트 차트가 다시 그려져야 할떄마다 실행이됨.
+          const { ctx, scales, data, chartArea } = chart;
+          //구조 분해하고자 하는 객체 =chart 에서 추출하고자 하는 속성들{ ctx, scales, data, chartArea }
+          const xScale = scales.x;
+          const yScale = scales.y;
+          const barGap = 10;
+          const barWidth = 20;
+          const leftMargin = 40;
+          const categoryCount = data.datasets.length;
 
-      function createRadialGradient(ctx) {
-        const gradient = ctx.createRadialGradient(80, 49, 0, 80, 49, 80);
-        gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-        gradient.addColorStop(1, "rgba(34, 210, 234, 1)");
-        return gradient;
-      }
-      // 차트 데이터 정의
-      const data = {
-        datasets: [
-          {
-            data: [currentV, totalV - currentV],
-            backgroundColor: [createRadialGradient(ctx), "rgba(187, 238, 252, 0.2)"],
-            borderWidth: 0,
-          },
-        ],
-      };
+          //3개의 바 한 그룹 안에 갭 2개가 포함된 너비 변수화
+          const groupWidth = barWidth * categoryCount + barGap * (categoryCount - 1);
 
-      // Chart.js를 사용하여 차트를 생성
-      const gaugeChart = new Chart(ctx, {
-        type: "doughnut", // 도넛 차트 타입 사용
-        data: data,
-        options: {
-          circumference: 180, // 반원을 만들기 위해 180도로 설정
-          rotation: -90, // 차트를 회전하여 반원이 위쪽을 향하도록 함
-          cutout: "80%", // 내부 cutout 비율 (게이지 두께 조절)
-          responsive: true, // 차트의 크기가 부모 컨테이너에 맞춰 조정되도록 설정
-          maintainAspectRatio: false, // 컨테이너 비율에 맞추는 옵션
-          plugins: {
-            tooltip: { enabled: false }, // 툴팁 비활성화
-            legend: { display: false }, // 범례 숨김
-          },
+          // 7개의 그룹에 대해 반복
+          for (let dateIndex = 0; dateIndex < data.labels.length; dateIndex++) {
+            // 각 그룹의 시작 x 위치 계산 (그룹의 중앙이 x축 레이블과 일치하도록)
+            let groupStartX = xScale.getPixelForTick(dateIndex) - groupWidth / 2;
+
+            // 각 데이터셋(실측값, 예측값, 세번째값)에 대해 반복
+            for (let categoryIndex = 0; categoryIndex < categoryCount; categoryIndex++) {
+              // 각 막대의 x 위치 계산
+              const barX = groupStartX + (barWidth + barGap) * categoryIndex;
+
+              // 각 막대의 x 위치와 너비 설정
+              chart.getDatasetMeta(categoryIndex).data[dateIndex].x = barX;
+              chart.getDatasetMeta(categoryIndex).data[dateIndex].width = barWidth;
+            }
+          }
+
+          //////////////////////////
+
+          // console.log(chart.getDatasetMeta(1).data[0]);
         },
-        plugins: [
-          {
-            id: "shadow-plugin",
-            beforeDraw: (chart) => {
-              //beforeDraw는 차트가 그려지기 전에 시작되는 훅함수.
-              const { ctx, width, height } = chart;
-              //ctx는 렌더링 2d컨텍스트, width,height차트캔버스의 너비와 높이.  shadow-plugin차트 아래 반원 모양 그라데이션 그림자를 그림. 여러개의 작은 동그라미로 구성됨.
-              const x = width / 2; // 왼쪽 끝에서 차트 너비의 절반만큼이 중앙임
-              const y = height - 10; // 위에서 부터 차트 높이길이만큼 떨어진 위치. 이유는 모르겠는데 차트높이가 보이는 것보다 10px 마진이 있어서, 그만큼 빼줌.
-              const radius = (width / 2) * 0.7; // 게이지의 70%
-              const totalStartAngle = Math.PI; // - 180도 그림자의 시작 마이너스를 지워도 같은 이유는 clockotherwise 변수가 시계방향으로 되어있어서
-              const totalEndAngle = 0; // 0도 끝각도
-              const counterClockwise = false; // 시계 방향
-
-              const lineCount = 40; // dash 개수
-
-              const unitAngle = Math.abs(totalEndAngle - totalStartAngle) / lineCount; // dash + gap 각도
-              const gapAngle = unitAngle / 2; // dash 각도
-
-              for (let i = 0; i < lineCount; i++) {
-                //이 루프는 lineCount만큼 반복하면서 각각의 호를 그립니다. 각 호는 조금씩 다른 각도와 투명도를 가지고이를 통해 그라데이션 효과를 줌
-                ctx.save();
-                ctx.beginPath();
-
-                const startAngle = totalStartAngle + unitAngle * i; // 작은 대시 하나의 시작 각도
-                const endAngle = startAngle + gapAngle; // 작은 대시 하나의 끝 각도
-
-                const alpha = i / lineCount; // 투명도를 0에서 1까지 증가시킴, lineCount 만큼 등분. 0/40, 1/40, 2/40, ... 40/40
-
-                ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`; // 선 색상 설정
-                ctx.lineWidth = 2; // 선 두께 설정
-
-                // x, y, radius, startAngle, endAngle
-                ctx.arc(x, y, radius, startAngle, endAngle, counterClockwise);
-
-                ctx.stroke();
-                ctx.restore();
-              }
-            },
-          },
-          {
-            id: "centerText",
-            afterDraw: (chart) => {
-              const width = chart.width;
-              const height = chart.height;
-              const ctx = chart.ctx;
-
-              ctx.save();
-              ctx.font = "bold 36px Arial"; // 폰트 설정
-              ctx.fillStyle = "rgb(255, 255, 255)"; // 텍스트 색상 설정
-              ctx.textBaseline = "start";
-              ctx.textAlign = "center";
-
-              // 퍼센트숫자부분  계산 하는부분
-              const percentage = Math.round((currentV / totalV) * 100); //100을곱해서 퍼센테이지화 시킴.
-              const text = `${percentage}%`; //이부분이 문자열로 만드는거
-              const textX = width / 2; //정중앙 표시
-              const textY = height * 0.85; //높이 지정 팔십오프로위치에 택스트 배치
-
-              ctx.fillText(text, textX, textY); //캔버스에 변수를 그림.
-              ctx.restore(); // 이전에 저장된 캔버스 복원
-            },
-          },
-        ],
       });
 
-      // 범례 텍스트를 업데이트 하는 업데이트 레전드임.
-      function updateLegend() {
-        document.getElementById(
-          "legendText"
-        ).innerHTML = `<span class="presentValue">${currentV} m²</span> / <span class="amountValue">${totalAmount} m²</span>`;
-        //id로 찾은요소의  html내용을 변경해준ㅁ
-      }
-
-      updateLegend();
-
-      /////////////////////////////////////////////////////////////////////
+      const barChart = new Chart(ctx, {
+        type: "bar",
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          maxBarThickness: 90,
+          minBarThickness: 90,
+          plugins: {
+            legend: {
+              display: true,
+              position: "top",
+              align: "start",
+              labels: {
+                usePointStyle: true,
+                pointStyle: "circle",
+                pointRadius: 1,
+              },
+            },
+            tooltip: {
+              backgroundColor: "pink",
+            },
+          },
+          scales: {
+            x: {
+              grid: {
+                display: false,
+              },
+            },
+            y: {
+              beginAtZero: true,
+              ticks: {
+                stepSize: 500,
+                display: false,
+              },
+              max: 4000,
+            },
+          },
+        },
+        data: {
+          labels: ["24-11-23", "24-11-24", "24-11-25", "24-11-26", "24-11-27", "24-11-28", "24-11-29"],
+          datasets: [
+            {
+              label: "실측값",
+              backgroundColor: ["rgba(22, 143, 167, 0.5)"],
+              data: [800, 1500, 3500, 2500, 500, 2500, 0],
+            },
+            {
+              label: "예측값",
+              backgroundColor: ["rgba(22, 13, 7, 0.5)"],
+              data: [1500, 3500, 900, 1500, 3300, 2200, 2900],
+            },
+            {
+              label: "세번째값",
+              backgroundColor: ["#075"],
+              data: [1500, 3500, 900, 1500, 3300, 2200, 2900],
+            },
+          ],
+        },
+      });
     </script>
   </body>
 </html>

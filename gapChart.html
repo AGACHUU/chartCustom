@@ -25,19 +25,43 @@
           //구조 분해하고자 하는 객체 =chart 에서 추출하고자 하는 속성들{ ctx, scales, data, chartArea }
           const xScale = scales.x;
           const yScale = scales.y;
-          const barGap = 10;
-          const barWidth = 20;
+          const barGap = 20;
+          const barWidth = 40;
           const leftMargin = 40;
           const categoryCount = data.datasets.length;
+          //3개의 바 한 그룹 안에 갭 2개가 포함된 너비 변수화
+          const groupWidth = barWidth * categoryCount + barGap * (categoryCount - 1);
+
+          //7개의 그룹날짜라벨에 대한 반복문()
+          for (let dateIndex = 0; dateIndex < data.labels.length; dateIndex++) {
+            //각 그룹의 시작 x위치 계산(그룹 중앙이 엑스축의 중앙과 일치하도록 맞춰줌)
+            //getpixelforTick(dataIndex)는 현재날짜 레이블 x축 위치를 반환
+            //groupwidth/2를 빼서 그룹의중앙이 레이블과 일치하도록 함.
+            let groupStartX = xScale.getPixelForTick(dateIndex) - groupWidth / 2;
+
+            //각 데이터셋(실측예측 세번째 값)에 대한 반복
+            for (let categoryIndex = 0; categoryIndex < categoryCount; categoryIndex++) {
+              //각막대의 x위치를  계산
+              //groupStarx는 날짜라벨 시작위치임
+
+              // 각 막대의 x 위치와 너비 설정
+              const barX = groupStartX + (barWidth + barGap) * categoryIndex;
+              //categoryindex는 현재 실측예측세번째값의 메타데이터에 접근
+              //차트 객체에 설정해주는거지 이건 변수화가 아님.
+              chart.getDatasetMeta(categoryIndex).data[dateIndex].x = barX;
+              chart.getDatasetMeta(categoryIndex).data[dateIndex].width = barWidth;
+            }
+          }
+
           //첫번째 그룹 첫번째 값의 위치 앞에 갭 포함
-          chart.getDatasetMeta(0).data[0].x = leftMargin;
-          chart.getDatasetMeta(0).data[0].width = barWidth;
-          //첫번째 그룹 두번째 예측값 위치 계산해주기 .
-          chart.getDatasetMeta(1).data[0].x = leftMargin + barWidth + barGap;
-          chart.getDatasetMeta(1).data[0].width = barWidth;
-          chart.getDatasetMeta(2).data[0].x = chart.getDatasetMeta(1).data[0].x + barWidth + barGap;
-          // chart.getDatasetMeta(2).data[0].x = leftMargin + (barWidth + barGap) * 2; 이렇게도 바꿀수 있음 !
-          chart.getDatasetMeta(2).data[0].width = barWidth;
+          // chart.getDatasetMeta(0).data[0].x = leftMargin;
+          // chart.getDatasetMeta(0).data[0].width = barWidth;
+          // //첫번째 그룹 두번째 예측값 위치 계산해주기 .
+          // chart.getDatasetMeta(1).data[0].x = leftMargin + barWidth + barGap;
+          // chart.getDatasetMeta(1).data[0].width = barWidth;
+          // chart.getDatasetMeta(2).data[0].x = chart.getDatasetMeta(1).data[0].x + barWidth + barGap;
+          // // chart.getDatasetMeta(2).data[0].x = leftMargin + (barWidth + barGap) * 2; 이렇게도 바꿀수 있음 !
+          // chart.getDatasetMeta(2).data[0].width = barWidth;
           //////////////////////////
 
           // console.log(chart.getDatasetMeta(1).data[0]);
@@ -82,22 +106,22 @@
           },
         },
         data: {
-          labels: ["24-11-23", "24-11-24", "24-11-25", "24-11-26", "24-11-27", "24-11-28", "24-11-29"],
+          labels: ["24-11-23", "24-11-24", "24-11-25", "24-11-26", "24-11-27", "24-11-28"],
           datasets: [
             {
               label: "실측값",
               backgroundColor: ["rgba(22, 143, 167, 0.5)"],
-              data: [800, 1500, 3500, 2500, 500, 2500, 0],
+              data: [800, 1500, 3500, 2500, 500, 2500],
             },
             {
               label: "예측값",
               backgroundColor: ["rgba(22, 13, 7, 0.5)"],
-              data: [1500, 3500, 900, 1500, 3300, 2200, 2900],
+              data: [1500, 3500, 900, 1500, 3300, 2200],
             },
             {
               label: "세번째값",
               backgroundColor: ["#075"],
-              data: [1500, 3500, 900, 1500, 3300, 2200, 2900],
+              data: [1500, 3500, 900, 1500, 3300, 2200],
             },
           ],
         },
